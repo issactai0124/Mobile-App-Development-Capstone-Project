@@ -1,6 +1,8 @@
-# mobile_app_dev_capstone
+## Deployment
 
-A new Flutter project.
+The web version of this app is automatically deployed to GitHub Pages.
+
+**Live Demo:** [Habit Tracker Web](https://issactai0124.github.io/Mobile-App-Development-Capstone-Project/)
 
 ## Getting Started
 

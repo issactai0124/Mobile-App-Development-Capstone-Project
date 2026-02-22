@@ -15,7 +15,7 @@ class HabitTrackerScreen extends StatefulWidget {
   const HabitTrackerScreen({super.key, required this.username});
 
   @override
-  _HabitTrackerScreenState createState() => _HabitTrackerScreenState();
+  State<HabitTrackerScreen> createState() => _HabitTrackerScreenState();
 }
 
 class _HabitTrackerScreenState extends State<HabitTrackerScreen> {
@@ -62,7 +62,7 @@ class _HabitTrackerScreenState extends State<HabitTrackerScreen> {
       try {
         return _getColorFromHex(colorHex);
       } catch (e) {
-        print('Error parsing color for $habit: $e');
+        debugPrint('Error parsing color for $habit: $e');
       }
     }
     return Colors.blue; // Default color in case of error.
@@ -224,7 +224,7 @@ class _HabitTrackerScreenState extends State<HabitTrackerScreen> {
                   ),
                 ),
           const Divider(),
-          const Padding(
+          Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
               'Done ✅🎉',
@@ -307,9 +307,10 @@ class _HabitTrackerScreenState extends State<HabitTrackerScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.clear();
 
+    if (!context.mounted) return;
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => LoginScreen()),
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
     );
   }
 
@@ -321,7 +322,7 @@ class _HabitTrackerScreenState extends State<HabitTrackerScreen> {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       color: color,
-      child: Container(
+      child: SizedBox(
         height: 60, // Adjust the height for thicker cards.
         child: ListTile(
           title: Text(

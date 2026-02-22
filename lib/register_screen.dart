@@ -10,8 +10,9 @@ import 'habit_tracker_screen.dart';
 import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
   @override
-  _RegisterScreenState createState() => _RegisterScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
@@ -106,7 +107,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     for (var habit in selectedHabits) {
       var randomColor =
           _habitColors[colorKeys[random.nextInt(colorKeys.length)]]!;
-      selectedHabitsMap[habit] = randomColor.value.toRadixString(16);
+      selectedHabitsMap[habit] = randomColor.toARGB32().toRadixString(16);
     }
 
     // Save user information and habits to shared preferences.
@@ -117,6 +118,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     await prefs.setString('selectedHabitsMap', jsonEncode(selectedHabitsMap));
     // await prefs.setStringList('selectedHabits', selectedHabits);
 
+    if (!mounted) return;
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(

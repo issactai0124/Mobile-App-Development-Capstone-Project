@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -8,7 +9,7 @@ class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  _NotificationsScreenState createState() => _NotificationsScreenState();
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
@@ -27,37 +28,37 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Future<void> _initNotifications() async {
-    // Ensure you have an app icon (e.g., @mipmap/ic_launcher) configured in Android
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    try {
+      const AndroidInitializationSettings initializationSettingsAndroid =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    final DarwinInitializationSettings initializationSettingsDarwin =
-        DarwinInitializationSettings(
-          requestAlertPermission: true,
-          requestBadgePermission: true,
-          requestSoundPermission: true,
-        );
+      const DarwinInitializationSettings initializationSettingsDarwin =
+          DarwinInitializationSettings(
+            requestAlertPermission: true,
+            requestBadgePermission: true,
+            requestSoundPermission: true,
+          );
 
-    final InitializationSettings initializationSettings =
-        InitializationSettings(
-          android: initializationSettingsAndroid,
-          iOS: initializationSettingsDarwin,
-        );
+      const InitializationSettings initializationSettings =
+          InitializationSettings(
+            android: initializationSettingsAndroid,
+            iOS: initializationSettingsDarwin,
+          );
 
-    // FIX: initializationSettings is a positional argument, but the user IDE reports it requires a named parameter 'settings'.
-    // However, looking at the standard package, it IS positional.
-    // BUT the user's error message says: "The named parameter 'settings' is required".
-    // This implies the user has a version or custom wrapper where it IS named.
-    // I will try to use the named parameter 'settings' as the error suggests.
-    await flutterLocalNotificationsPlugin.initialize(
-      settings: initializationSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) {},
-    );
+      // We use 'settings' because the developer environment reported it as required.
+      final bool? initialized = await flutterLocalNotificationsPlugin
+          .initialize(
+            settings: initializationSettings,
+            onDidReceiveNotificationResponse: (NotificationResponse response) {
+              debugPrint('Notification tapped: ${response.payload}');
+            },
+          );
+
+      debugPrint('Notifications initialized: $initialized');
+    } catch (e) {
+      debugPrint('Error during notification initialization: $e');
+    }
   }
-  // WAIT. I cannot write comments inside the function call in the file.
-  // I will just write the code.
-  // Re-reading error: "The named parameter 'settings' is required".
-  // So I will use `settings: initializationSettings`.
 
   Future<void> _loadData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -86,30 +87,56 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Color(int.parse('0x$hexColor'));
   }
 
-  Future<void> _sendTestNotification() async {
-    const AndroidNotificationDetails androidNotificationDetails =
-        AndroidNotificationDetails(
-          'habit_tracker_channel',
-          'Habit Reminders',
-          channelDescription: 'Channel for habit notifications',
-          importance: Importance.max,
-          priority: Priority.high,
-          showWhen: false,
-        );
-    const NotificationDetails notificationDetails = NotificationDetails(
-      android: androidNotificationDetails,
-      iOS: DarwinNotificationDetails(),
-    );
+  Future<void> _requestPermissions() async {
+    if (kIsWeb) {
+      // For Web, requests are often handled via the browser's own UI when show() is called,
+      // but explicitly requesting implementation implementation helps if available.
+      debugPrint('Requesting web notification permissions...');
+    }
 
-    // FIX: User error says "The named parameter 'id' is required... 0 positional expected, 4 found".
-    // So I MUST use named parameters for id, title, body, notificationDetails.
-    await flutterLocalNotificationsPlugin.show(
-      id: 0,
-      title: 'Habit Reminder',
-      body: "It's time to work on your habits!",
-      notificationDetails: notificationDetails,
-      payload: 'test',
-    );
+    // For iOS/Android implementation specific:
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >()
+        ?.requestPermissions(alert: true, badge: true, sound: true);
+  }
+
+  Future<void> _sendTestNotification() async {
+    try {
+      await _requestPermissions();
+
+      const AndroidNotificationDetails androidNotificationDetails =
+          AndroidNotificationDetails(
+            'habit_tracker_channel',
+            'Habit Reminders',
+            channelDescription: 'Channel for habit notifications',
+            importance: Importance.max,
+            priority: Priority.high,
+            showWhen: false,
+          );
+
+      const NotificationDetails notificationDetails = NotificationDetails(
+        android: androidNotificationDetails,
+        iOS: DarwinNotificationDetails(),
+      );
+
+      debugPrint('Attempting to show notification...');
+      await flutterLocalNotificationsPlugin.show(
+        id: 0,
+        title: 'Habit Reminder',
+        body: "It's time to work on your habits!",
+        notificationDetails: notificationDetails,
+        payload: 'test',
+      );
+      debugPrint('Notification.show called');
+    } catch (e) {
+      debugPrint('Error showing notification: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
   }
 
   @override
@@ -151,7 +178,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   label: Text(habit),
                   labelStyle: TextStyle(color: color),
                   selected: selectedHabits.contains(habit),
-                  selectedColor: color.withOpacity(0.3),
+                  selectedColor: color.withValues(alpha: 0.3),
                   backgroundColor: Colors.white,
                   side: BorderSide(color: color, width: 2.0),
                   onSelected: (bool selected) {
@@ -194,22 +221,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               }).toList(),
             ),
             const Spacer(),
-            ElevatedButton(
-              onPressed: () {
-                _sendTestNotification();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue.shade700,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _sendTestNotification,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue.shade700,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
+                child: const Text('Send Test Notification'),
               ),
-              child: const Text('Send Test Notification'),
             ),
           ],
         ),

@@ -6,8 +6,9 @@ import 'habit_tracker_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
@@ -31,6 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await prefs.setDouble('age', 25);
       await prefs.setString('country', 'United States');
 
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(

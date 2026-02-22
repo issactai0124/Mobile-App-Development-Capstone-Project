@@ -8,7 +8,7 @@ class PersonalInfoScreen extends StatefulWidget {
   const PersonalInfoScreen({super.key});
 
   @override
-  _PersonalInfoScreenState createState() => _PersonalInfoScreenState();
+  State<PersonalInfoScreen> createState() => _PersonalInfoScreenState();
 }
 
 class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
@@ -76,6 +76,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     );
 
     // Pass back the updated name
+    if (!mounted) return;
     Navigator.pop(context, _nameController.text);
   }
 

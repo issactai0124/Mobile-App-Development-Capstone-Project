@@ -7,7 +7,7 @@ class AddHabitScreen extends StatefulWidget {
   const AddHabitScreen({super.key});
 
   @override
-  _AddHabitScreenState createState() => _AddHabitScreenState();
+  State<AddHabitScreen> createState() => _AddHabitScreenState();
 }
 
 class _AddHabitScreenState extends State<AddHabitScreen> {
@@ -128,7 +128,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                   setState(() {
                     // Add the new habit to the selectedHabitsMap with the chosen color
                     selectedHabitsMap[_habitController.text] = selectedColor
-                        .value
+                        .toARGB32()
                         .toRadixString(16);
                     _habitController.clear();
                     selectedColorName = 'Amber'; // Reset to default
@@ -137,10 +137,6 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                   });
                 }
               },
-              child: Text(
-                'Add Habit',
-                style: TextStyle(color: Colors.white, fontSize: 16),
-              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue.shade700,
                 shape: RoundedRectangleBorder(
@@ -150,6 +146,10 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                   horizontal: 24,
                   vertical: 12,
                 ),
+              ),
+              child: const Text(
+                'Add Habit',
+                style: TextStyle(color: Colors.white, fontSize: 16),
               ),
             ),
             const SizedBox(height: 20),

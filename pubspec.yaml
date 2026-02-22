@@ -38,6 +38,7 @@ dependencies:
   fluttertoast: ^9.0.0
   http: ^1.6.0
   flutter_local_notifications: ^20.1.0
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:

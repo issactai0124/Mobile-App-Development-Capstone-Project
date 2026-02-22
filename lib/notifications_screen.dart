@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+import 'web_permission_stub.dart'
+    if (dart.library.js_interop) 'web_permission_web.dart';
+
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
@@ -92,6 +95,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       // For Web, requests are often handled via the browser's own UI when show() is called,
       // but explicitly requesting implementation implementation helps if available.
       debugPrint('Requesting web notification permissions...');
+      await requestWebNotificationPermission();
     }
 
     // For iOS/Android implementation specific:

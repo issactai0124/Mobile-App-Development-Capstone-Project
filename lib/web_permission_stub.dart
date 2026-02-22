@@ -1,3 +1,7 @@
-Future<void> requestWebNotificationPermission() async {
+Future<bool> requestWebNotificationPermission() async {
+  return false;
+}
+
+void showWebNotification(String title, String body) {
   // No-op for mobile
 }

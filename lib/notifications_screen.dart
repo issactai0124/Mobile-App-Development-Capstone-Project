@@ -126,14 +126,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       );
 
       debugPrint('Attempting to show notification...');
-      await flutterLocalNotificationsPlugin.show(
-        id: 0,
-        title: 'Habit Reminder',
-        body: "It's time to work on your habits!",
-        notificationDetails: notificationDetails,
-        payload: 'test',
-      );
-      debugPrint('Notification.show called');
+      if (kIsWeb) {
+        showWebNotification(
+          'Habit Reminder',
+          "It's time to work on your habits!",
+        );
+      } else {
+        await flutterLocalNotificationsPlugin.show(
+          id: 0,
+          title: 'Habit Reminder',
+          body: "It's time to work on your habits!",
+          notificationDetails: notificationDetails,
+          payload: 'test',
+        );
+      }
+      debugPrint('Notification show call completed');
     } catch (e) {
       debugPrint('Error showing notification: $e');
       if (!mounted) return;
